@@ -24,8 +24,8 @@ const CONFIG = Object.freeze({
   initialPositionMax: -0.4,
   initialVelocity: 0.0,
 
-  // 1秒間の物理更新回数
-  physicsHz: 60,
+  // 1秒間の物理更新回数。ゲームとして操作しやすいよう遅めに設定。
+  physicsHz: 15,
 
   // 制限時間。nullなら無制限。
   maxSteps: 9999,
@@ -125,10 +125,17 @@ const returnToNeutral = document.getElementById("returnToNeutral");
 const messageOverlay = document.getElementById("messageOverlay");
 const messageTitle = document.getElementById("messageTitle");
 const messageText = document.getElementById("messageText");
+const recordsList = document.getElementById("recordsList");
+const clearRecordsButton = document.getElementById("clearRecordsButton");
 
 const env = new MountainCarEnvironment(CONFIG);
 
+const MAX_RECORDS = 5;
+
 let action = 0.0;
+let hasStarted = false;
+let resultRecorded = false;
+let sessionRecords = [];
 let lastFrameTime = performance.now();
 let accumulatedTime = 0.0;
 const physicsStepMs = 1000 / CONFIG.physicsHz;
@@ -163,6 +170,12 @@ function heightToCanvasY(height) {
 
 function setAction(value) {
   action = clamp(Number(value), -1.0, 1.0);
+
+  if (!hasStarted && Math.abs(action) > Number.EPSILON) {
+    hasStarted = true;
+    accumulatedTime = 0.0;
+  }
+
   slider.value = action.toFixed(2);
   actionValue.textContent = action.toFixed(2);
 }
@@ -175,9 +188,79 @@ function returnActionToNeutral() {
 
 function resetGame() {
   env.reset();
-  setAction(0.0);
+  action = 0.0;
+  hasStarted = false;
+  resultRecorded = false;
+  accumulatedTime = 0.0;
+  slider.value = "0.00";
+  actionValue.textContent = "0.00";
   messageOverlay.classList.add("is-hidden");
   updateDashboard();
+}
+
+function saveRecord(state) {
+  const record = {
+    result: state.terminated ? "GOAL" : "TIME UP",
+    steps: state.stepCount,
+    recordedAt: new Date(),
+  };
+
+  sessionRecords.unshift(record);
+  sessionRecords = sessionRecords.slice(0, MAX_RECORDS);
+  renderRecords();
+}
+
+function clearRecords() {
+  sessionRecords = [];
+  renderRecords();
+}
+
+function formatRecordedAt(dateValue) {
+  const date = dateValue instanceof Date
+    ? dateValue
+    : new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
+}
+
+function renderRecords() {
+  recordsList.replaceChildren();
+
+  if (sessionRecords.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "empty-record";
+    emptyItem.textContent = "まだ記録はありません。";
+    recordsList.appendChild(emptyItem);
+    return;
+  }
+
+  sessionRecords.forEach((record, index) => {
+    const item = document.createElement("li");
+    item.className = "record-item";
+
+    const rank = document.createElement("span");
+    rank.className = "record-rank";
+    rank.textContent = `#${index + 1}`;
+
+    const result = document.createElement("span");
+    result.className = "record-result";
+    result.textContent = `${record.result} — ${record.steps} steps`;
+
+    const meta = document.createElement("span");
+    meta.className = "record-meta";
+    meta.textContent = formatRecordedAt(record.recordedAt);
+
+    item.append(rank, result, meta);
+    recordsList.appendChild(item);
+  });
 }
 
 function showEndMessage(state) {
@@ -206,7 +289,11 @@ function updateDashboard() {
 function updatePhysics() {
   const previousState = env.getState();
 
-  if (previousState.terminated || previousState.truncated) {
+  if (
+    !hasStarted
+    || previousState.terminated
+    || previousState.truncated
+  ) {
     return;
   }
 
@@ -214,7 +301,15 @@ function updatePhysics() {
   updateDashboard();
 
   if (state.terminated || state.truncated) {
-    setAction(0.0);
+    action = 0.0;
+    slider.value = "0.00";
+    actionValue.textContent = "0.00";
+
+    if (!resultRecorded) {
+      saveRecord(state);
+      resultRecorded = true;
+    }
+
     showEndMessage(state);
   }
 }
@@ -385,7 +480,7 @@ function drawHud() {
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "700 22px system-ui, sans-serif";
-  ctx.fillText("Reach the flag", 44, 49);
+  ctx.fillText(hasStarted ? "Reach the flag" : "Move the slider to start", 44, 49);
 
   ctx.fillStyle = "#a9b4ce";
   ctx.font = "500 15px system-ui, sans-serif";
@@ -444,6 +539,7 @@ for (const button of [fullLeftButton, fullRightButton]) {
 
 resetButton.addEventListener("click", resetGame);
 overlayResetButton.addEventListener("click", resetGame);
+clearRecordsButton.addEventListener("click", clearRecords);
 
 // 補助操作。スライダーが主操作だが、キーボードも利用可能。
 window.addEventListener("keydown", (event) => {
@@ -470,5 +566,6 @@ window.addEventListener("keyup", (event) => {
   }
 });
 
+renderRecords();
 resetGame();
 requestAnimationFrame(gameLoop);

@@ -150,7 +150,7 @@ canvas {
 
 .stat,
 .controller-panel,
-.instructions {
+.hint-panel {
   border: 1px solid var(--panel-border);
   background: var(--panel);
   backdrop-filter: blur(14px);
@@ -246,21 +246,106 @@ input[type="range"] {
   font-size: 0.9rem;
 }
 
-.instructions {
+.hint-panel {
   margin-top: 14px;
-  padding: 22px;
   border-radius: 20px;
 }
 
-.instructions h2 {
-  margin: 0 0 8px;
+.inline-records {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.section-heading h2 {
+  margin: 0;
   font-size: 1.05rem;
 }
 
-.instructions p {
-  margin: 0;
+.section-heading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.records-list {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record-item,
+.empty-record {
+  padding: 14px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.record-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.record-rank {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.record-result {
+  font-weight: 800;
+}
+
+.record-meta,
+.empty-record {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.hint-panel {
+  overflow: hidden;
+}
+
+.hint-panel summary {
+  padding: 20px 22px;
+  cursor: pointer;
+  font-weight: 800;
+  list-style-position: inside;
+}
+
+.hint-panel[open] summary {
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.hint-content {
+  padding: 0 22px 22px;
+}
+
+.hint-content p {
+  margin: 18px 0 0;
   color: var(--muted);
   line-height: 1.75;
+}
+
+@media (max-width: 520px) {
+  .record-item {
+    grid-template-columns: auto 1fr;
+  }
+
+  .record-meta {
+    grid-column: 2;
+  }
 }
 
 @media (max-width: 680px) {
