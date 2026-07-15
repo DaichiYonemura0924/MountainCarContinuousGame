@@ -139,6 +139,9 @@ let action = 0.0;
 let hasStarted = false;
 let resultRecorded = false;
 let sessionRecords = [];
+
+let previousRenderState = env.getState();
+let currentRenderState = env.getState();
 let lastFrameTime = performance.now();
 let lastRenderTime = performance.now();
 let accumulatedTime = 0.0;
@@ -206,6 +209,9 @@ function resetGame() {
   }
 
   env.reset();
+
+  previousRenderState = env.getState();
+  currentRenderState = env.getState();
 
   action = 0.0;
   hasStarted = false;
@@ -322,7 +328,10 @@ function updatePhysics() {
     return;
   }
 
-  const state = env.step(action);
+  previousRenderState = currentRenderState;
+  currentRenderState = env.step(action);
+  const state = currentRenderState;
+
   updateDashboard();
 
   if (state.terminated || state.truncated) {
@@ -340,6 +349,32 @@ function updatePhysics() {
 
     showEndMessage(state);
   }
+}
+
+function getInterpolatedRenderState() {
+  if (!hasStarted) {
+    return currentRenderState;
+  }
+
+  const alpha = clamp(
+    accumulatedTime / physicsStepMs,
+    0.0,
+    1.0,
+  );
+
+  return {
+    position:
+      (1.0 - alpha) * previousRenderState.position
+      + alpha * currentRenderState.position,
+
+    velocity:
+      (1.0 - alpha) * previousRenderState.velocity
+      + alpha * currentRenderState.velocity,
+
+    stepCount: currentRenderState.stepCount,
+    terminated: currentRenderState.terminated,
+    truncated: currentRenderState.truncated,
+  };
 }
 
 function drawBackground() {
@@ -448,7 +483,7 @@ function drawGoal() {
 }
 
 function drawCar() {
-  const state = env.getState();
+  const state = getInterpolatedRenderState();
   const x = positionToCanvasX(state.position);
   const y = heightToCanvasY(mountainHeight(state.position));
   const angle = -Math.atan(mountainSlope(state.position));
@@ -498,7 +533,7 @@ function drawCar() {
 }
 
 function drawHud() {
-  const state = env.getState();
+  const state = getInterpolatedRenderState();
 
   ctx.save();
   ctx.fillStyle = "rgba(4, 10, 22, 0.55)";
