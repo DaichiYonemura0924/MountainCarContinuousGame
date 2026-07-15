@@ -43,13 +43,32 @@ button {
 }
 
 .app {
-  width: min(1100px, calc(100% - 28px));
+  width: min(1380px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 40px 0 56px;
+  padding: 28px 0 40px;
+}
+
+.desktop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.left-column,
+.right-column {
+  min-width: 0;
+}
+
+.right-column {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 14px;
 }
 
 .hero {
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .eyebrow {
@@ -76,9 +95,6 @@ h1 {
 }
 
 .game-panel {
-  width: 100%;
-  max-width: 780px;
-  margin: 0 auto;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--panel-border);
@@ -153,6 +169,7 @@ canvas {
 
 .stat,
 .controller-panel,
+.records-panel,
 .hint-panel {
   border: 1px solid var(--panel-border);
   background: var(--panel);
@@ -254,10 +271,9 @@ input[type="range"] {
   border-radius: 20px;
 }
 
-.inline-records {
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--panel-border);
+.records-panel {
+  padding: 20px;
+  border-radius: 20px;
 }
 
 .section-heading {
@@ -352,8 +368,8 @@ input[type="range"] {
 }
 
 @media (max-width: 680px) {
-  .app {
-    width: min(100% - 18px, 900px);
+ .app {
+    width: min(100% - 18px, 1100px);
     padding-top: 24px;
   }
 
@@ -367,5 +383,32 @@ input[type="range"] {
 
   .controller-panel {
     padding: 18px;
+  }
+}
+
+
+@media (min-width: 901px) {
+  .game-panel {
+    max-height: 62vh;
+  }
+
+  canvas {
+    max-height: 62vh;
+    object-fit: contain;
+  }
+
+  .dashboard,
+  .controller-panel {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  .desktop-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .right-column {
+    position: static;
   }
 }
