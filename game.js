@@ -226,6 +226,11 @@ function saveRecord(result, steps) {
   renderRecords();
 }
 
+function clearRecords() {
+  sessionRecords = [];
+  renderRecords();
+}
+
 function formatRecordedAt(dateValue) {
   const date = dateValue instanceof Date
     ? dateValue
