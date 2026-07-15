@@ -248,6 +248,10 @@ function formatRecordedAt(dateValue) {
 }
 
 function renderRecords() {
+  if (!recordsList) {
+    return;
+  }
+
   recordsList.replaceChildren();
 
   if (sessionRecords.length === 0) {
@@ -558,7 +562,9 @@ for (const button of [fullLeftButton, fullRightButton]) {
 
 resetButton.addEventListener("click", resetGame);
 overlayResetButton.addEventListener("click", resetGame);
-clearRecordsButton.addEventListener("click", clearRecords);
+if (clearRecordsButton) {
+  clearRecordsButton.addEventListener("click", clearRecords);
+}
 
 // 補助操作。スライダーが主操作だが、キーボードも利用可能。
 window.addEventListener("keydown", (event) => {
