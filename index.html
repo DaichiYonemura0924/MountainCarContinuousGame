@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="ブラウザで遊べるMountainCarContinuous">
   <title>MountainCarContinuous</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <main class="app">
@@ -13,13 +13,13 @@
       <p class="eyebrow">CONTINUOUS CONTROL GAME</p>
       <h1>MountainCarContinuous</h1>
       <p class="lead">
-        スライダーでエンジン出力を調整し、右側のゴールを目指そう。
+        スライダーでエンジン出力を調整して右側のゴールを目指そう．
       </p>
     </header>
 
     <section class="game-panel" aria-label="ゲーム画面">
       <canvas id="gameCanvas" width="960" height="540">
-        お使いのブラウザはCanvasに対応していません。
+        お使いのブラウザはCanvasに対応していません．
       </canvas>
 
       <div id="messageOverlay" class="message-overlay is-hidden" aria-live="polite">
@@ -96,7 +96,7 @@
         </div>
 
         <ol id="recordsList" class="records-list">
-          <li class="empty-record">まだ記録はありません。</li>
+          <li class="empty-record">まだ記録はありません．</li>
         </ol>
       </div>
     </section>
@@ -105,13 +105,13 @@
       <summary>ヒント</summary>
       <div class="hint-content">
         <p>
-          右へ進むだけでは坂を登り切れません。左右に揺れて勢いをつけ、
-          車の位置がゴールラインを越えるように操作してください。
+          右へ進むだけでは坂を登り切れません．左右に揺れて勢いをつけ，
+          車の位置がゴールラインを越えるように操作してください．
         </p>
       </div>
     </details>
   </main>
 
-  <script src="game.js"></script>
+  <script src="game.js?v=4"></script>
 </body>
 </html>
