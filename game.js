@@ -24,8 +24,11 @@ const CONFIG = Object.freeze({
   initialPositionMax: -0.4,
   initialVelocity: 0.0,
 
-  // 1秒間の物理更新回数。ゲームとして操作しやすいよう遅めに設定。
+  // 1秒間の物理更新回数。シミュレーション時間の進み方を決める。
   physicsHz: 15,
+
+  // 1秒間の描画回数。物理更新頻度とは独立。
+  renderFps: 60,
 
   // 制限時間。nullなら無制限。
   maxSteps: 9999,
@@ -137,8 +140,10 @@ let hasStarted = false;
 let resultRecorded = false;
 let sessionRecords = [];
 let lastFrameTime = performance.now();
+let lastRenderTime = performance.now();
 let accumulatedTime = 0.0;
 const physicsStepMs = 1000 / CONFIG.physicsHz;
+const renderStepMs = 1000 / CONFIG.renderFps;
 
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
@@ -161,8 +166,8 @@ function positionToCanvasX(position) {
 }
 
 function heightToCanvasY(height) {
-  const topMargin = 78;
-  const bottomMargin = 64;
+  const topMargin = 156;
+  const bottomMargin = 128;
   const usableHeight = canvas.height - topMargin - bottomMargin;
 
   return canvas.height - bottomMargin - height * usableHeight;
@@ -412,7 +417,7 @@ function drawMountain() {
   }
 
   ctx.strokeStyle = "#9ce6bd";
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 10;
   ctx.lineCap = "round";
   ctx.stroke();
 }
@@ -425,17 +430,17 @@ function drawGoal() {
   ctx.translate(x, y);
 
   ctx.strokeStyle = "#f9fbff";
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 10;
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.lineTo(0, -105);
+  ctx.lineTo(0, -210);
   ctx.stroke();
 
   ctx.fillStyle = "#ffcc66";
   ctx.beginPath();
-  ctx.moveTo(0, -102);
-  ctx.lineTo(64, -82);
-  ctx.lineTo(0, -61);
+  ctx.moveTo(0, -204);
+  ctx.lineTo(128, -164);
+  ctx.lineTo(0, -122);
   ctx.closePath();
   ctx.fill();
 
@@ -449,43 +454,43 @@ function drawCar() {
   const angle = -Math.atan(mountainSlope(state.position));
 
   ctx.save();
-  ctx.translate(x, y - 17);
+  ctx.translate(x, y - 34);
   ctx.rotate(angle);
 
   // Shadow
   ctx.globalAlpha = 0.28;
   ctx.fillStyle = "#000000";
   ctx.beginPath();
-  ctx.ellipse(0, 18, 45, 10, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 36, 90, 20, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
 
   // Body
   ctx.fillStyle = "#71e6c2";
   ctx.beginPath();
-  ctx.roundRect(-42, -20, 84, 31, 10);
+  ctx.roundRect(-84, -40, 168, 62, 20);
   ctx.fill();
 
   // Cabin
   ctx.fillStyle = "#dff9ff";
   ctx.beginPath();
-  ctx.moveTo(-19, -20);
-  ctx.lineTo(-7, -41);
-  ctx.lineTo(18, -41);
-  ctx.lineTo(31, -20);
+  ctx.moveTo(-38, -40);
+  ctx.lineTo(-14, -82);
+  ctx.lineTo(36, -82);
+  ctx.lineTo(62, -40);
   ctx.closePath();
   ctx.fill();
 
   // Wheels
-  for (const wheelX of [-27, 27]) {
+  for (const wheelX of [-54, 54]) {
     ctx.fillStyle = "#07111f";
     ctx.beginPath();
-    ctx.arc(wheelX, 12, 13, 0, Math.PI * 2);
+    ctx.arc(wheelX, 24, 26, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "#9baac0";
     ctx.beginPath();
-    ctx.arc(wheelX, 12, 5, 0, Math.PI * 2);
+    ctx.arc(wheelX, 24, 10, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -498,19 +503,19 @@ function drawHud() {
   ctx.save();
   ctx.fillStyle = "rgba(4, 10, 22, 0.55)";
   ctx.beginPath();
-  ctx.roundRect(24, 22, 294, 62, 16);
+  ctx.roundRect(48, 44, 588, 124, 32);
   ctx.fill();
 
   ctx.fillStyle = "#ffffff";
-  ctx.font = "700 22px system-ui, sans-serif";
-  ctx.fillText(hasStarted ? "Reach the flag" : "Move the slider to start", 44, 49);
+  ctx.font = "700 44px system-ui, sans-serif";
+  ctx.fillText(hasStarted ? "Reach the flag" : "Move the slider to start", 88, 98);
 
   ctx.fillStyle = "#a9b4ce";
-  ctx.font = "500 15px system-ui, sans-serif";
+  ctx.font = "500 30px system-ui, sans-serif";
   ctx.fillText(
     `x = ${state.position.toFixed(3)}   v = ${state.velocity.toFixed(3)}`,
-    44,
-    72,
+    88,
+    144,
   );
 
   ctx.restore();
@@ -534,7 +539,11 @@ function gameLoop(currentTime) {
     accumulatedTime -= physicsStepMs;
   }
 
-  draw();
+  if (currentTime - lastRenderTime >= renderStepMs) {
+    draw();
+    lastRenderTime = currentTime;
+  }
+
   requestAnimationFrame(gameLoop);
 }
 
