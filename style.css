@@ -76,6 +76,9 @@ h1 {
 }
 
 .game-panel {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--panel-border);
@@ -350,7 +353,7 @@ input[type="range"] {
 
 @media (max-width: 680px) {
   .app {
-    width: min(100% - 18px, 1100px);
+    width: min(100% - 18px, 900px);
     padding-top: 24px;
   }
 
