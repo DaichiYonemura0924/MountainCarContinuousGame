@@ -28,7 +28,7 @@ const CONFIG = Object.freeze({
   physicsHz: 15,
 
   // 1秒間の描画回数。物理更新頻度とは独立。
-  renderFps: 60,
+  renderFps: 144,
 
   // 制限時間。nullなら無制限。
   maxSteps: 9999,
