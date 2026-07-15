@@ -187,31 +187,42 @@ function returnActionToNeutral() {
 }
 
 function resetGame() {
+  const previousState = env.getState();
+
+  if (
+    hasStarted
+    && !resultRecorded
+    && previousState.stepCount > 0
+  ) {
+    saveRecord(
+      "RESET",
+      previousState.stepCount,
+    );
+  }
+
   env.reset();
+
   action = 0.0;
   hasStarted = false;
   resultRecorded = false;
   accumulatedTime = 0.0;
+
   slider.value = "0.00";
   actionValue.textContent = "0.00";
+
   messageOverlay.classList.add("is-hidden");
   updateDashboard();
 }
 
-function saveRecord(state) {
+function saveRecord(result, steps) {
   const record = {
-    result: state.terminated ? "GOAL" : "TIME UP",
-    steps: state.stepCount,
+    result,
+    steps,
     recordedAt: new Date(),
   };
 
   sessionRecords.unshift(record);
   sessionRecords = sessionRecords.slice(0, MAX_RECORDS);
-  renderRecords();
-}
-
-function clearRecords() {
-  sessionRecords = [];
   renderRecords();
 }
 
@@ -306,7 +317,10 @@ function updatePhysics() {
     actionValue.textContent = "0.00";
 
     if (!resultRecorded) {
-      saveRecord(state);
+      saveRecord(
+        state.terminated ? "GOAL" : "TIME UP",
+        state.stepCount,
+      );
       resultRecorded = true;
     }
 
